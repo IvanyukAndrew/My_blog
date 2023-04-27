@@ -8,7 +8,7 @@ import Button from "@mui/material/Button";
 import { useForm } from "react-hook-form";
 
 import styles from "./Login.module.scss";
-import { fetchUserData, selectorIsAuth } from "../../redux/slices/auth";
+import { fetchAuth, selectorIsAuth } from "../../redux/slices/auth";
 
 export const Login = () => {
   const isAuth = useSelector(selectorIsAuth);
@@ -17,7 +17,6 @@ export const Login = () => {
   const {
     register,
     handleSubmit,
-    setError,
     formState: { errors, isValid },
   } = useForm({
     defaultValues: {
@@ -28,19 +27,21 @@ export const Login = () => {
   });
 
   const onSubmit = async (values) => {
-    const data = await dispatch(fetchUserData(values));
-    console.log("data", data);
+    const data = await dispatch(fetchAuth(values));
+
+    if (!data.payload) {
+      return alert("Не вдалося війти в акаунт!");
+    }
+
     if ("token" in data.payload) {
       window.localStorage.setItem("token", data.payload.token);
-    } else {
-      alert('Не вдалося війти у акаунт')
     }
   };
 
   if (isAuth) {
     return <Navigate to="/" />;
   }
-  console.log("isAuth", isAuth);
+
   return (
     <Paper classes={{ root: styles.root }}>
       <Typography classes={{ root: styles.title }} variant="h5">
@@ -65,7 +66,13 @@ export const Login = () => {
           {...register("password", { required: "Укажіть ваш пароль" })}
           fullWidth
         />
-        <Button type="submit" size="large" variant="contained" fullWidth>
+        <Button
+          disabled={!isValid}
+          type="submit"
+          size="large"
+          variant="contained"
+          fullWidth
+        >
           Войти
         </Button>
       </form>

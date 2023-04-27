@@ -2,13 +2,32 @@ import PostModel from "../models/Post.js";
 
 export const getAll = async (req, res) => {
   try {
-    const posts = await PostModel.find().populate("user").exec();
+    const posts = await PostModel.find()
+      .populate("user")
+      .sort({ createdAt: -1 })
+      .exec();
 
     res.json(posts);
   } catch (err) {
     console.log(err);
     res.status(500).json({
       message: "Не вдалося получити пости",
+    });
+  }
+};
+
+export const getSort = async (req, res) => {
+  try {
+    const posts = await PostModel.find()
+      .populate("user")
+      .sort({ viewCount: -1 })
+      .exec();
+
+    res.json(posts);
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({
+      message: "Не вдалося получити відсортовані пости",
     });
   }
 };
@@ -46,6 +65,7 @@ export const getOne = async (req, res) => {
         returnDocument: "after",
       }
     )
+      .populate("user")
       .then((doc) => res.json(doc))
       .catch((err) =>
         res.status(500).json({
@@ -96,7 +116,7 @@ export const create = async (req, res) => {
     const doc = new PostModel({
       title: req.body.title,
       text: req.body.text,
-      tags: req.body.tags,
+      tags: req.body.tags.split(","),
       imageUrl: req.body.imageUrl,
       user: req.userId,
     });
@@ -123,7 +143,7 @@ export const update = async (req, res) => {
       {
         title: req.body.title,
         text: req.body.text,
-        tags: req.body.tags,
+        tags: req.body.tags.split(","),
         imageUrl: req.body.imageUrl,
         user: req.userId,
       }

@@ -1,7 +1,7 @@
 import express from "express";
 import mongoose from "mongoose";
 import multer from "multer";
-import cors from 'cors'
+import cors from "cors";
 
 import checkAuth from "./utils/checkAuth.js";
 import { register, login, getMe } from "./controllers/UserController.js";
@@ -15,6 +15,7 @@ import {
   getAll,
   getLastTags,
   getOne,
+  getSort,
   remove,
   update,
 } from "./controllers/PostController.js";
@@ -41,27 +42,45 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 app.use(express.json());
-app.use(cors())
+app.use(cors());
 app.use("/upload", express.static("uploads"));
 
 app.post("/auth/login", loginValidation, handlesValidationErrors, login);
-app.post("/auth/register", registerValidation, handlesValidationErrors, register);
+app.post(
+  "/auth/register",
+  registerValidation,
+  handlesValidationErrors,
+  register
+);
 app.get("/auth/me", checkAuth, getMe);
 
 app.post("/upload", checkAuth, upload.single("image"), (req, res) => {
   res.json({
-    url: `/uploads/${req.file.originalname}`,
+    url: `/upload/${req.file.originalname}`,
   });
 });
 
-app.get("/tags", getLastTags)
+app.get("/tags", getLastTags);
 
 app.get("/posts", getAll);
+app.get("/posts/sort", getSort);
 app.get("/posts/tags", getLastTags);
 app.get("/posts/:id", getOne);
 app.delete("/posts/:id", checkAuth, remove);
-app.post("/posts", checkAuth, postCreateValidation, handlesValidationErrors, create);
-app.patch("/posts/:id", checkAuth, postCreateValidation, handlesValidationErrors, update);
+app.post(
+  "/posts",
+  checkAuth,
+  postCreateValidation,
+  handlesValidationErrors,
+  create
+);
+app.patch(
+  "/posts/:id",
+  checkAuth,
+  postCreateValidation,
+  handlesValidationErrors,
+  update
+);
 
 app.listen(7777, (err) => {
   if (err) {
